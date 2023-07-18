@@ -1,4 +1,0 @@
-D:/MyOffice/_PROG/4gitsync/Azimov-test-task/build/CMakeFiles/proxy-server.dir
-D:/MyOffice/_PROG/4gitsync/Azimov-test-task/build/CMakeFiles/client.dir
-D:/MyOffice/_PROG/4gitsync/Azimov-test-task/build/CMakeFiles/ALL_BUILD.dir
-D:/MyOffice/_PROG/4gitsync/Azimov-test-task/build/CMakeFiles/ZERO_CHECK.dir
