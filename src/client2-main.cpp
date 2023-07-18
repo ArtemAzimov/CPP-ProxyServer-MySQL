@@ -9,21 +9,21 @@ int main() {
     Client myClient;
     myClient.connectToSocket(mysql_user, mysql_password);
 
-    std::string query = "CREATE TABLE Customers (id INT PRIMARY KEY AUTO_INCREMENT"
+    std::string query = "CREATE TABLE Students (id INT PRIMARY KEY AUTO_INCREMENT"
     ",name VARCHAR(255), age INT, city VARCHAR(255));";
     myClient.createSQLRequest(query);
 
-    query = "INSERT INTO Customers (name, age, city) VALUES ('Client', '26', 'New York');";
+    query = "INSERT INTO Students (name, age, city) VALUES ('Client2', '26', 'New York');";
     myClient.createSQLRequest(query);
 
     query = "some incorrect user input";
     myClient.createSQLRequest(query);
 
-    query = "SELECT * FROM Customers;";
+    query = "SELECT * FROM Students;";
     myClient.createSQLRequest(query);
 
-    query = "INSERT INTO Customers (name, age, city) VALUES ('client1', '55', 'London');";
-    // Множественные запросы
+    query = "INSERT INTO Students (name, age, city) VALUES ('Client2', '55', 'London');";
+      // Множественные запросы
     for (int i = 0; i < 5000; ++i){
         myClient.createSQLRequest(query);
     }

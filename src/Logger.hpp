@@ -3,7 +3,6 @@
 #include <mutex>
 #include "proxy-server.hpp"
 
-
 class Logger{
 private:
     mysqlx::Session* pLoggerSession = nullptr;

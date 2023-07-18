@@ -3,5 +3,7 @@
 int main(){
 	ProxyServer myServer;
 	myServer.run();
-	myServer.shutdown();
+	// myServer.shutdown();
+
+	return EXIT_SUCCESS;
 }

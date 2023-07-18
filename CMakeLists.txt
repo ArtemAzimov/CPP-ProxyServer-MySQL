@@ -13,9 +13,13 @@ add_executable(proxy-server
             src/SQLhandler.cpp
             src/Logger.cpp)
 
+# Для тестирования (2 клиента однвеременно)
 add_executable(client 
             src/client-sock.cpp 
             src/client-main.cpp)
+add_executable(client2 
+            src/client-sock.cpp 
+            src/client2-main.cpp)
 
 # Линковка библиотеки MySQL Connector
 target_link_libraries(proxy-server mysqlcppconn8)

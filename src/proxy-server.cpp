@@ -50,10 +50,10 @@ int ProxyServer::run(){
 	}
 	std::cout << "Server set up and running..." << std::endl;
 
-	// Логирование
+	// Подключение логгера (синглтон) при удачном стартапе сервера
 	Logger::self().LoggerConnect();
 
-	// Сокет принимает соединение
+	// Сокет принимает соединение. Основной цикл
 	while (true) {
 		int clientSock = accept(sock, nullptr, nullptr);
 		if (clientSock == -1) {
@@ -61,20 +61,17 @@ int ProxyServer::run(){
 			closesocket(sock);
 			return 1;
 		}
-
 		std::cout << "New connection on proxy-server" << std::endl;
 
-		// Обработка подключения клиента в отдельном треде
-		std::thread clientThread(&ProxyServer::handleClient, this, clientSock);
-		clientThread.detach();
+		// Запуск каждого клиента в отдельном потоке
+		vecThread.push_back(std::thread(&ProxyServer::handleClient, this, clientSock));
 	}
-	return 0;
 }
 
 // Отправка sql-query SQL серверу и вывод результата клиенту
-void ProxyServer::sendQuery(int clientSock, SQLhandler& SQLhandle){
+void ProxyServer::sendQuery(int clientSock, SQLhandler* pSQLhandle){
 	bool empty_query = false;
-	while(empty_query == false){
+	while(!empty_query){
 		char client_request[BUFFER_SIZE];
 		memset(client_request, 0, sizeof(client_request));
 
@@ -88,10 +85,11 @@ void ProxyServer::sendQuery(int clientSock, SQLhandler& SQLhandle){
 			empty_query = true;
 			break;
 		}
-		std::cout << "Client data recieved: " << client_request << std::endl;
 
+		std::cout << "Client data recieved: " << client_request << std::endl;
+		
 		// Execute query
-		SQLhandle.send_SQL_request(client_request);
+		pSQLhandle->send_SQL_request(client_request);
 		
 		// Ответ на sql-query клиенту
 		const char* response = client_request;
@@ -101,12 +99,13 @@ void ProxyServer::sendQuery(int clientSock, SQLhandler& SQLhandle){
 			closesocket(clientSock);
 			return;
 		}
-		std::cout << "Data successfully sent to client." << std::endl;
+		std::cout << "Data successfully sent to client." << std::endl << std::endl;
 	}
 }
 
 // Обработка сервером запроса клиента
 void ProxyServer::handleClient(int clientSock) {
+	std::mutex mx;
 	std::lock_guard<std::mutex> lock(mx);
 
 	char client_request[BUFFER_SIZE];
@@ -134,25 +133,25 @@ void ProxyServer::handleClient(int clientSock) {
 		SQL_SERVER_IP, SQL_SERVER_PORT, credent[0], credent[1].c_str(), SQL_DATABASE);
 	
 	// Подключить к SQL Server
-	SQLhandler SQLhandle(settings);
+	SQLhandler* pSQLhandle = new SQLhandler(settings);
 
 	// Коннект к SQL успешен
-	const char* response = "Connected successfully to MySQL Server";
+	const char* response = "Connected successfully to MySQL Server.";
 	size_t bytesSent = send(clientSock, response, strlen(response), 0);
 	if (bytesSent == -1) {
 		std::cerr << "Error when sending data to client: " << strerror(errno) << std::endl;
 		closesocket(clientSock);
 		return;
 	}
-	std::cout << "Data successfully sent to client." << std::endl;
+	std::cout << "Data successfully sent to client." << std::endl << std::endl;
 
 	// Цикл для принятия запросов клиента
-	sendQuery(clientSock, SQLhandle);
+	sendQuery(clientSock, pSQLhandle);
 
-
+	// Дисконнект клиента и освобождение SQL хендлера
 	closesocket(clientSock);
-	SQLhandle.closeSession();
-	std::cout << "Client disconnected" << std::endl;
+	pSQLhandle->closeSession();
+	std::cout << "Client disconnected." << std::endl << std::endl;
 }
 
 // Дисконнект сокета
